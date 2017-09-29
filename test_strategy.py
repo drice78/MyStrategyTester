@@ -19,7 +19,7 @@ def build_board(board, player1_list, player2_list):
 				print "We ran out of pieces"
 				break
 			else:
-				board[r][c] = [player1_list.pop(), "player1"]
+				board[r][c] = [player1_list.pop(), "player1", False]
 
 	#Populate player2 special strategy locations first
 	print ('Placing strategy pieces for player2')
@@ -36,7 +36,7 @@ def build_board(board, player1_list, player2_list):
 				print "We ran out of pieces"
 			else:
 				print ("{}, {}").format(r, c)
-				board[r][c] = [player2_list.pop(), "player2"]
+				board[r][c] = [player2_list.pop(), "player2", False]
 
 
 def create_player(piece_list, player):
@@ -49,17 +49,18 @@ def initiate_board(board):
 
   #Build a board of size 10 x 10
 	for r in range(10):
-		#for c in range(10):
-			#Mark Lakes at positions on rows 4 and 5
-			if r == 4 or r == 5:
-				board.append([["empty", "none"]] * 2)
-				board[r].append([["lake", "lake"]] * 2)
-				board[r].append([["empty", "none"]] * 2)
-				board[r].append([["lake", "lake"]] * 2)
-				board[r].append([["empty", "none"]] * 2)
-			else:
-				#Put empty list into all other positions
-				board.append([["empty", "none"]] * 10)
+		#Put empty list into all other positions
+		board.append([["empty", "none", False]] * 10)
+	#Add lakes
+	board[4][2] = ['lake', 'lake', False]
+	board[4][3] = ['lake', 'lake', False]
+	board[5][2] = ['lake', 'lake', False]
+	board[4][3] = ['lake', 'lake', False]
+	board[4][6] = ['lake', 'lake', False]
+	board[4][7] = ['lake', 'lake', False]
+	board[5][6] = ['lake', 'lake', False]
+	board[5][7] = ['lake', 'lake', False]
+
 	return board
 
 def print_board(board, player="NONE"):
@@ -73,31 +74,57 @@ def print_board(board, player="NONE"):
 
 def get_game_status(board, player1_list, player2_list):
 	print ("Getting status of game")
+
+	moves = False # assume no move until one is found
+	#loop through board and update whether a piece is movable or not based on its neighboars
+	for r in range(10):
+		for c in range(10):
+			#check for empty or opposing player pieces
+			print ("{},{}: {}").format(r,c,board[r][c])
+			if board[r][c][1] == "player1" or board[r][c][1] == "player2":
+				#check nearby locations and mark if movable
+#
+#
+#
+# Need to check if it is on the top row, then check for right or left, then check final direcitons. Repeat for bottom row. 
+#
+#
+#
+
+
+				print ("We found a player piece at {},{}").format(r,c)
+				if c < 9:
+					if board[r][c+1][1] == "empty" or board[r][c+1][1] != board[r][c+1][1] and board[r][c+1][1] != 'lake':
+					print ("Clear in the right")
+					board[r][c][2] = False
+					moves = True
+				elif board[r][c-1][1] == "empty" or board[r][c-1][1] != board[r][c-1][1] and board[r][c-1][1] != 'lake':
+					print ("Clearn on the left")
+					board[r][c][2] = False
+					moves = True
+				elif board[r+1][c][1] == "empty" or board[r+1][c][1] != board[r+1][c][1] and board[r+1][c][1] != 'lake':
+					print ("Clear down below")
+					board[r][c][2] = False
+					moves = True
+				elif board[r-1][c][1] == "empty" or board[r-1][c][1] != board[r-1][c][1] and board[r-1][c][1] != 'lake':
+					print ("Clear up above")
+					board[r][c][2] = False
+					moves = True
+				print ("Moveable is {}").format(moves)
 	return "Active"
 
-def move_piece(board, player_pieces)
+def move_piece(board, player_pieces, playername):
 	#find a random movable piece
 	random.shuffle(player_pieces)
 
 	#move piece in random direction
-	direction = random.randint(1,4)
-	if direction == 1:
-		#Check north
-	elif direction == 2:
-		#check south
-	elif direction == 3:
-		#check east
-	else:
-		#go west
 
 	#if other player piece occupies new position, then battle
-	if board[player_piece[1]][player_piece[2]] == 'lake' or playername
+	if board[player_piece[1]][player_piece[2]]  == 'lake':
 		valid_move = False
 	else:
 		valid_move = True
 
-	if valid_move:
-		if board
 
 
 #Initialize board and player lists
@@ -119,7 +146,6 @@ print ('Welcome to Strategy Tester')
 initiate_board(board)
 
 #Display the board
-#print_board(board)
 
 # Create the pieces lists for both players
 create_player(pieces, player1)
