@@ -7,6 +7,8 @@ import random
 #1) Mark if a piece is known to the other player
 #2) If piece is known to player then don't purposely attack with guaranteed loss, unless there are no other moves
 #3) Target miners towards bombs?
+#4) check for stalemate scenarios, such as no miners to clear remaining bombs
+#5) check for player with no moveable pieces at all, i.e. bombs and flags only
 
 
 
@@ -273,25 +275,29 @@ else:
 	print ("Player 2 goes first")
 		#move_piece(player2)
 #Move until game is over
-while moves_left(board, player1, player2) and not flag_captured:
+while moves_left(board, player1, player2) and flag_captured != True:
 	turn_number = turn_number + 1
 	print ("Turn {}").format(turn_number)
 	moveable[:] = []
+	moveable_count = 0
 	#Pick random movable piece for active player
 	#Lets first try to print out pieces that are moveable and reduce our list of random picking.
 	for r in range(10):
 		for c in range(10):
 			if board[r][c][2] and board[r][c][1] == curPlayer:
 				moveable.append([r, c])
-	print (moveable)
+				moveable_count = moveable_count + 1
+	print ("{} has {} moveable pieces").format(curPlayer, moveable_count)
 
 	#pick random from moveable
-	random.shuffle(moveable)
+	if	moveable_count > 0:
+		random.shuffle(moveable)
+		print ("Moving {},{}").format(moveable[0][0], moveable[0][1])
 
-	print ("Moving {},{}").format(moveable[0][0], moveable[0][1])
-
-	#Move Piece
-	move_piece(moveable[0][0], moveable[0][1])
+		#Move Piece
+		move_piece(moveable[0][0], moveable[0][1])
+	else:
+		print("Cannot move for {}").format(curPlayer)
 
 	#Display board state
 	#print_board(board)
@@ -303,6 +309,7 @@ while moves_left(board, player1, player2) and not flag_captured:
 	#Change player
 	if curPlayer == 'player1':
 		curPlayer = 'player2'
+		print ("Player 2 moved next")
 	else:
 		curPlayer = 'player1'
 		print ("Player 1 moves next")
@@ -312,8 +319,6 @@ while moves_left(board, player1, player2) and not flag_captured:
 		for pc in range(10):
 			if board[pr][pc][1] == curPlayer:
 				print ("{}, - {}").format(board[pr][pc][0], board[pr][pc][2])
-
-	#print moveable pieces owned by the current playe
 
 if flag_captured:
 	print ("Game ended in flag capture")
