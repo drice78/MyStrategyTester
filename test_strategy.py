@@ -2,6 +2,16 @@
 #opponent boards
 import random 
 
+
+#Things to Do
+#1) Mark if a piece is known to the other player
+#2) If piece is known to player then don't purposely attack with guaranteed loss, unless there are no other moves
+#3) Target miners towards bombs?
+
+
+
+
+
 def build_board(board, player1_list, player2_list):
 	print ('Building Board')
 
@@ -55,7 +65,7 @@ def initiate_board(board):
 	board[4][2] = ['lake', 'lake', False]
 	board[4][3] = ['lake', 'lake', False]
 	board[5][2] = ['lake', 'lake', False]
-	board[4][3] = ['lake', 'lake', False]
+	board[5][3] = ['lake', 'lake', False]
 	board[4][6] = ['lake', 'lake', False]
 	board[4][7] = ['lake', 'lake', False]
 	board[5][6] = ['lake', 'lake', False]
@@ -72,58 +82,150 @@ def print_board(board, player="NONE"):
 		#print board showing where pieces exist, but hiding value if piece is owned by the other player
 		print ("Cannot display for a single player....yet")
 
-def get_game_status(board, player1_list, player2_list):
+def is_right_clear(row, column):
+	if column == 9:
+		return False
+	elif board[row][column + 1][1] == 'lake' or board[row][column + 1][1] == board[row][column][1]:
+		return False
+	else:
+		return True
+
+def is_left_clear(row, column):
+	if column == 0:
+		return False
+	elif board[row][column - 1][1] == 'lake' or board[row][column - 1][1] == board[row][column][1]:
+		return False
+	else:
+		return True
+
+def is_below_clear(row, column):
+	if row == 9:
+		return False
+	elif board[row + 1][column][1] == 'lake' or board[row + 1][column][1] == board[row][column][1]:
+		return False
+	else:
+		return True
+
+def is_above_clear(row, column):
+	if row == 0:
+		return False
+	elif board[row - 1][column][1] == 'lake' or board[row - 1][column][1] == board[row][column][1]:
+		return False
+	else:
+		return True
+
+
+def moves_left(board, player1_list, player2_list):
 	print ("Getting status of game")
 
 	moves = False # assume no move until one is found
 	#loop through board and update whether a piece is movable or not based on its neighboars
 	for r in range(10):
 		for c in range(10):
-			#check for empty or opposing player pieces
-			print ("{},{}: {}").format(r,c,board[r][c])
+			#check movement possibilities for player pieces
 			if board[r][c][1] == "player1" or board[r][c][1] == "player2":
 				#check nearby locations and mark if movable
-#
-#
-#
-# Need to check if it is on the top row, then check for right or left, then check final direcitons. Repeat for bottom row. 
-#
-#
-#
-
-
-				print ("We found a player piece at {},{}").format(r,c)
-				if c < 9:
-					if board[r][c+1][1] == "empty" or board[r][c+1][1] != board[r][c+1][1] and board[r][c+1][1] != 'lake':
-					print ("Clear in the right")
+				if board[r][c][0] == 'flag' or board[r][c][0] == 'bomb':
 					board[r][c][2] = False
+				elif is_right_clear(r, c) or is_left_clear(r, c) or is_above_clear(r, c) or is_below_clear(r, c):
+					board[r][c][2] = True
 					moves = True
-				elif board[r][c-1][1] == "empty" or board[r][c-1][1] != board[r][c-1][1] and board[r][c-1][1] != 'lake':
-					print ("Clearn on the left")
+				else:
 					board[r][c][2] = False
-					moves = True
-				elif board[r+1][c][1] == "empty" or board[r+1][c][1] != board[r+1][c][1] and board[r+1][c][1] != 'lake':
-					print ("Clear down below")
-					board[r][c][2] = False
-					moves = True
-				elif board[r-1][c][1] == "empty" or board[r-1][c][1] != board[r-1][c][1] and board[r-1][c][1] != 'lake':
-					print ("Clear up above")
-					board[r][c][2] = False
-					moves = True
-				print ("Moveable is {}").format(moves)
-	return "Active"
+	return moves
 
-def move_piece(board, player_pieces, playername):
-	#find a random movable piece
-	random.shuffle(player_pieces)
+def piece_value(piecename):
+	value = pieces.get(piecename)[0]
+	return value
 
-	#move piece in random direction
+def battle(att_r, att_c, def_r, def_c):
+		#battle royale
+	print ("Battle is beginning")
+	attacker = board[att_r][att_c][0]
+	defender = board[def_r][def_c][0]
 
-	#if other player piece occupies new position, then battle
-	if board[player_piece[1]][player_piece[2]]  == 'lake':
-		valid_move = False
+	print ("{} is attacking {}").format(attacker, defender)
+
+	if defender == "flag":
+		#Game Over!!!a
+		print ("{}'s flag has been captured!").format(board[def_r][def_c][1])
+		flag_captured = True
+	elif defender == "empty":
+		#move piece
+		board[def_r][def_c] = board[att_r][att_c]
+		board[att_r][att_c] = ["empty", "empty", False]
+		print ("{} moved").format(attacker)
+	elif defender == "bomb":
+		if attacker == "miner":
+			board[def_r][def_c] = board[att_r][att_c]
+			board[att_r][att_c] = ["empty", "empty", False]
+			print ("{} defeated {}").format(attacker, defender)
+		else:
+			board[att_r][att_c] = ["empty", "empty", False]
+			print ("{}, lost to {}").format(attacker, defender)
+	elif attacker == "spy":
+		if defender == "marshal":
+			board[def_r][def_c] = board[att_r][att_c]
+			board[att_r][att_c] = ["empty", "empty", False]
+			print ("{} defeated {}").format(attacker, defender)
+		else:
+			board[att_r][att_c] = ["empty", "empty", False]
+			print ("{}, lost to {}").format(attacker, defender)
 	else:
-		valid_move = True
+		if piece_value(attacker) <= piece_value(defender):
+			board[def_r][def_c] = board[att_r][att_c]
+			board[att_r][att_c] = ["empty", "empty", False]
+			print ("{} defeated {}").format(attacker, defender)
+		else:
+			print ("{}, lost to {}").format(attacker, defender)
+			board[att_r][att_c] = ["empty", "empty", False]
+
+
+def move_piece(row, column):
+	checkcount = 0
+	battlecount = 0
+
+	#pick a random direction
+	direction = random.randint(0,3)
+
+	while checkcount < 4 and battlecount < 1:
+		#check if direction is free, if not iterate(for 3 times) to find first available move
+		if  direction == 0: 
+			#check up
+			if is_above_clear(row, column):
+				#move up
+				battle(row, column, row - 1, column)
+				battlecount = battlecount + 1
+		elif direction == 1:
+			#check right
+			if is_right_clear(row, column):
+				#move right
+				battle(row, column, row, column + 1)
+				battlecount = battlecount + 1
+		elif direction == 2:
+			#check down
+			if is_below_clear(row, column):
+				#move down
+				battle(row, column, row + 1, column)
+				battlecount = battlecount + 1
+		elif direction == 3:
+			#check left
+			if is_left_clear(row, column):
+				#move left
+				battle(row, column, row, column -1)
+				battlecount = battlecount + 1
+
+		if battlecount == 0:
+			if direction == 3:
+				direction = 0
+			else:
+				direction = direction + 1
+		checkcount = checkcount + 1
+
+	#if space is free, just move
+
+	#if space is occupied by opponent, then lets battle
+
 
 
 
@@ -131,9 +233,10 @@ def move_piece(board, player_pieces, playername):
 board = []
 player1 = []
 player2 = []
-
+moveable = []
 #Initiate the turn number to 0
 turn_number = 0
+flag_captured = False
 
 #Define piece names and quantity {name : [value, quantity]}
 pieces = {'marshal' : [1, 1], 'general' : [2, 1], 'colonel' : [3, 2], 'major' : [4, 3], 'captain' : [5, 4],
@@ -141,6 +244,9 @@ pieces = {'marshal' : [1, 1], 'general' : [2, 1], 'colonel' : [3, 2], 'major' : 
           'spy' : [11, 1], 'flag' : [12, 1]}
 
 print ('Welcome to Strategy Tester')
+MAX_TURNS = raw_input("Enter the max number of turns: ")
+print ("You entered: {}").format(MAX_TURNS)
+isCorrect = raw_input("Is that correct?")
 
 # Create the Board
 initiate_board(board)
@@ -160,24 +266,56 @@ print_board(board)
 #Determine who goes first randomly
 if random.randint(1,2) == 1:
 	print ("Player 1 goes first")
+	curPlayer = "player1"
 	#move_piece(player1)
 else:
+	curPlayer = "player2"
 	print ("Player 2 goes first")
 		#move_piece(player2)
 #Move until game is over
-while get_game_status(board, player1, player2):
-  turn_number = turn_number + 1
-  print ("Turn " + str(turn_number))
-  #Pick random movable piece for active player
+while moves_left(board, player1, player2) and not flag_captured:
+	turn_number = turn_number + 1
+	print ("Turn {}").format(turn_number)
+	moveable[:] = []
+	#Pick random movable piece for active player
+	#Lets first try to print out pieces that are moveable and reduce our list of random picking.
+	for r in range(10):
+		for c in range(10):
+			if board[r][c][2] and board[r][c][1] == curPlayer:
+				moveable.append([r, c])
+	print (moveable)
 
-  #Move Piece
+	#pick random from moveable
+	random.shuffle(moveable)
 
-    #Battle or take empty space
+	print ("Moving {},{}").format(moveable[0][0], moveable[0][1])
 
-  #Display board state
-  #print_board(board)
+	#Move Piece
+	move_piece(moveable[0][0], moveable[0][1])
 
-  #Check if game winning move was made
-  if turn_number >= 2:
-    break
+	#Display board state
+	#print_board(board)
+	#Check if game winning move was made
+	if turn_number >= int(MAX_TURNS):
+		print ("Ran out of turns")
+		break
 
+	#Change player
+	if curPlayer == 'player1':
+		curPlayer = 'player2'
+	else:
+		curPlayer = 'player1'
+		print ("Player 1 moves next")
+
+	#Print the pieces owned by current player
+	for pr in range(10):
+		for pc in range(10):
+			if board[pr][pc][1] == curPlayer:
+				print ("{}, - {}").format(board[pr][pc][0], board[pr][pc][2])
+
+	#print moveable pieces owned by the current playe
+
+if flag_captured:
+	print ("Game ended in flag capture")
+else:
+	print ("Game ended in stale mate due to lack of moving pieces left")
